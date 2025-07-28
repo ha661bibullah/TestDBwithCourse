@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>অ্যাডমিন প্যানেল - পেমেন্ট অনুমোদন</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Hind Siliguri', 'Bangla', sans-serif;
+        }
+        
+        :root {
+            --primary-color: #5e35b1;
+            --secondary-color: #43a047;
+            --danger-color: #e53935;
+            --text-color: #2d3436;
+            --light-bg: #f5f5f5;
+            --card-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            --gradient-bg: linear-gradient(135deg, #5e35b1 0%, #3949ab 100%);
+            --border-radius: 12px;
+        }
+        
+        body {
+            background-color: var(--light-bg);
+            color: var(--text-color);
+            line-height: 1.6;
+            font-size: 16px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 25px;
+        }
+        
+        header {
+            text-align: center;
+            padding: 30px 0;
+            margin-bottom: 35px;
+            background: var(--gradient-bg);
+            border-radius: var(--border-radius);
+            box-shadow: var(--card-shadow);
+        }
+        
+        header h1 {
+            font-size: 38px;
+            font-weight: bold;
+            color: white;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            letter-spacing: 0.5px;
+        }
+        
+        .admin-nav {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(94, 53, 177, 0.2);
+        }
+        
+        .admin-nav a {
+            padding: 10px 20px;
+            background: white;
+            border-radius: var(--border-radius);
+            text-decoration: none;
+            color: var(--primary-color);
+            font-weight: 500;
+            transition: all 0.3s;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        .admin-nav a.active {
+            background: var(--gradient-bg);
+            color: white;
+        }
+        
+        .admin-nav a:hover:not(.active) {
+            background: rgba(94, 53, 177, 0.1);
+        }
+        
+        .content-box {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: var(--card-shadow);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .content-box::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 5px;
+            height: 100%;
+            background: var(--gradient-bg);
+        }
+        
+        .content-title {
+            font-size: 22px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: var(--primary-color);
+            border-bottom: 1px solid rgba(94, 53, 177, 0.2);
+            padding-bottom: 12px;
+        }
+        
+        .payment-requests {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .payment-requests th {
+            background: rgba(94, 53, 177, 0.1);
+            color: var(--primary-color);
+            padding: 12px;
+            text-align: left;
+        }
+        
+        .payment-requests td {
+            padding: 12px;
+            border-bottom: 1px solid rgba(94, 53, 177, 0.1);
+        }
+        
+        .payment-requests tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .payment-requests tr:hover {
+            background: rgba(94, 53, 177, 0.05);
+        }
+        
+        .status-pending {
+            color: #ff9800;
+            font-weight: 500;
+        }
+        
+        .status-approved {
+            color: var(--secondary-color);
+            font-weight: 500;
+        }
+        
+        .status-rejected {
+            color: var(--danger-color);
+            font-weight: 500;
+        }
+        
+        .action-btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+            margin-right: 5px;
+        }
+        
+        .approve-btn {
+            background: var(--secondary-color);
+            color: white;
+        }
+        
+        .reject-btn {
+            background: var(--danger-color);
+            color: white;
+        }
+        
+        .view-btn {
+            background: var(--primary-color);
+            color: white;
+        }
+        
+        .action-btn:hover {
+            opacity: 0.8;
+            transform: translateY(-2px);
+        }
+        
+        .search-filter {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .search-filter input, .search-filter select {
+            padding: 10px 15px;
+            border: 1px solid rgba(94, 53, 177, 0.2);
+            border-radius: var(--border-radius);
+            font-family: inherit;
+        }
+        
+        .search-filter input {
+            flex: 1;
+        }
+        
+        .search-filter select {
+            width: 200px;
+        }
+        
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+            margin-top: 20px;
+        }
+        
+        .pagination button {
+            padding: 8px 12px;
+            background: white;
+            border: 1px solid rgba(94, 53, 177, 0.2);
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .pagination button.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+        
+        .pagination button:hover:not(.active) {
+            background: rgba(94, 53, 177, 0.1);
+        }
+        
+        .no-requests {
+            text-align: center;
+            padding: 30px;
+            color: #666;
+            font-style: italic;
+        }
+        
+        .payment-details-modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+        }
+        
+        .payment-details-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 25px;
+            border-radius: var(--border-radius);
+            width: 80%;
+            max-width: 800px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+        
+        .close-details-modal {
+            color: var(--primary-color);
+            float: right;
+            font-size: 32px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+        
+        .close-details-modal:hover {
+            background: rgba(94, 53, 177, 0.1);
+            transform: rotate(90deg);
+        }
+        
+        .details-title {
+            margin-bottom: 25px;
+            color: var(--primary-color);
+            font-size: 26px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(94, 53, 177, 0.2);
+        }
+        
+        .details-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .detail-item {
+            margin-bottom: 15px;
+        }
+        
+        .detail-label {
+            font-weight: 500;
+            color: var(--primary-color);
+            margin-bottom: 5px;
+        }
+        
+        .detail-value {
+            padding: 8px;
+            background: rgba(94, 53, 177, 0.05);
+            border-radius: 4px;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 25px;
+            justify-content: flex-end;
+        }
+        
+        @media (max-width: 768px) {
+            .details-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .payment-details-content {
+                width: 95%;
+                margin: 10% auto;
+            }
+            
+            header h1 {
+                font-size: 28px;
+            }
+            
+            .content-title {
+                font-size: 20px;
+            }
+            
+            .admin-nav {
+                overflow-x: auto;
+                padding-bottom: 8px;
+                scrollbar-width: thin;
+                scrollbar-color: var(--primary-color) #f1f1f1;
+            }
+            
+            .admin-nav::-webkit-scrollbar {
+                height: 4px;
+            }
+            
+            .admin-nav::-webkit-scrollbar-track {
+                background: #f1f1f1;
+                border-radius: 10px;
+            }
+            
+            .admin-nav::-webkit-scrollbar-thumb {
+                background: var(--primary-color);
+                border-radius: 10px;
+            }
+            
+            .admin-nav a {
+                display: inline-block;
+                white-space: nowrap;
+                font-size: 14px;
+                padding: 8px 16px;
+            }
+            
+            .payment-requests {
+                display: block;
+                overflow-x: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>পেমেন্ট অনুমোদন প্যানেল</h1>
+        </header>
+        
+        <div class="admin-nav">
+            <a href="#" class="active">পেমেন্ট রিকোয়েস্ট</a>
+            <a href="#">অনুমোদিত পেমেন্ট</a>
+            <a href="#">প্রত্যাখ্যান করা পেমেন্ট</a>
+            <a href="#">সকল শিক্ষার্থী</a>
+        </div>
+        
+        <div class="content-box">
+            <h2 class="content-title">অনুমোদনের জন্য পেন্ডিং পেমেন্ট</h2>
+            
+            <div class="search-filter">
+                <input type="text" placeholder="নাম, ইমেইল বা ট্রানজেকশন আইডি দ্বারা খুঁজুন">
+                <select>
+                    <option value="">সব পেমেন্ট মাধ্যম</option>
+                    <option value="bkash">বিকাশ</option>
+                    <option value="nagad">নগদ</option>
+                    <option value="bank">ব্যাংক</option>
+                </select>
+            </div>
+            
+            <table class="payment-requests">
+                <thead>
+                    <tr>
+                        <th>আইডি</th>
+                        <th>নাম</th>
+                        <th>ইমেইল</th>
+                        <th>মোবাইল</th>
+                        <th>পেমেন্ট মাধ্যম</th>
+                        <th>ট্রানজেকশন আইডি</th>
+                        <th>স্ট্যাটাস</th>
+                        <th>অ্যাকশন</th>
+                    </tr>
+                </thead>
+                <tbody id="pendingPayments">
+                    <!-- Payment requests will be loaded here -->
+                </tbody>
+            </table>
+            
+            <div class="pagination">
+                <button>&laquo;</button>
+                <button class="active">1</button>
+                <button>2</button>
+                <button>3</button>
+                <button>&raquo;</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Payment Details Modal -->
+    <div id="paymentDetailsModal" class="payment-details-modal">
+        <div class="payment-details-content">
+            <span class="close-details-modal" onclick="closeModal('paymentDetailsModal')">&times;</span>
+            <h2 class="details-title">পেমেন্ট ডিটেইলস</h2>
+            
+            <div class="details-content">
+                <div class="detail-item">
+                    <div class="detail-label">আবেদনকারীর নাম</div>
+                    <div class="detail-value" id="detail-name">মুহাম্মদ আব্দুল্লাহ</div>
+                </div>
+                
+                <div class="detail-item">
+                    <div class="detail-label">ইমেইল</div>
+                    <div class="detail-value" id="detail-email">abdullah@example.com</div>
+                </div>
+                
+                <div class="detail-item">
+                    <div class="detail-label">মোবাইল নাম্বার</div>
+                    <div class="detail-value" id="detail-phone">০১৯১১২৩৪৫৬৭</div>
+                </div>
+                
+                <div class="detail-item">
+                    <div class="detail-label">পেমেন্ট মাধ্যম</div>
+                    <div class="detail-value" id="detail-method">বিকাশ</div>
+                </div>
+                
+                <div class="detail-item">
+                    <div class="detail-label">ট্রানজেকশন আইডি</div>
+                    <div class="detail-value" id="detail-txn">TRX123456789</div>
+                </div>
+                
+                <div class="detail-item">
+                    <div class="detail-label">কোর্স আইডি</div>
+                    <div class="detail-value" id="detail-course">practical-ibarot</div>
+                </div>
+                
+                <div class="detail-item">
+                    <div class="detail-label">আবেদনের তারিখ</div>
+                    <div class="detail-value" id="detail-date">২০ জুলাই, ২০২৩</div>
+                </div>
+                
+                <div class="detail-item">
+                    <div class="detail-label">স্ট্যাটাস</div>
+                    <div class="detail-value status-pending" id="detail-status">পেন্ডিং</div>
+                </div>
+            </div>
+            
+            <div class="action-buttons">
+                <button class="action-btn reject-btn" onclick="updatePaymentStatus('rejected')">প্রত্যাখ্যান</button>
+                <button class="action-btn approve-btn" onclick="updatePaymentStatus('approved')">অনুমোদন করুন</button>
+            </div>
+
+
+<div class="detail-item">
+    <div class="detail-label">পরিমাণ</div>
+    <div class="detail-value" id="detail-amount">N/A</div>
+</div>
+        </div>
+    </div> 
+
+<!-- Lockal way -->
+<!-- <script>
+    // Current payment being viewed in modal
+    let currentPaymentId = null;
+    
+    // DOM elements for payment details
+    const detailElements = {
+        name: document.getElementById('detail-name'),
+        email: document.getElementById('detail-email'),
+        phone: document.getElementById('detail-phone'),
+        method: document.getElementById('detail-method'),
+        txn: document.getElementById('detail-txn'),
+        course: document.getElementById('detail-course'),
+        date: document.getElementById('detail-date'),
+        status: document.getElementById('detail-status'),
+        amount: document.getElementById('detail-amount')
+    };
+
+    // Function to render payment requests
+    async function renderPaymentRequests() {
+        try {
+            const response = await fetch('http://localhost:5000/api/admin/payments');
+            const result = await response.json();
+            
+            if (!response.ok) {
+                throw new Error(result.message || 'Failed to fetch payments');
+            }
+
+            const payments = result.payments || result;
+            
+            const tbody = document.getElementById('pendingPayments');
+            tbody.innerHTML = '';
+            
+            if (payments.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="8" class="no-requests">কোন পেন্ডিং পেমেন্ট রিকোয়েস্ট পাওয়া যায়নি</td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            payments.forEach(payment => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${payment.id}</td>
+                    <td>${payment.name}</td>
+                    <td>${payment.email || 'N/A'}</td>
+                    <td>${payment.phone || 'N/A'}</td>
+                    <td>${getPaymentMethodName(payment.paymentMethod)}</td>
+                    <td>${payment.txnId || 'N/A'}</td>
+                    <td class="${getStatusClass(payment.status)}">${getStatusText(payment.status)}</td>
+                    <td>
+                        <button class="action-btn view-btn" onclick="viewPaymentDetails('${payment.id}')">
+                            বিস্তারিত
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        } catch (error) {
+            console.error('Error fetching payments:', error);
+            const tbody = document.getElementById('pendingPayments');
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="8" class="error-message">
+                        পেমেন্ট রিকোয়েস্ট লোড করতে সমস্যা হয়েছে: ${error.message}
+                    </td>
+                </tr>
+            `;
+        }
+    }
+    
+    // Get payment method name in Bengali
+    function getPaymentMethodName(method) {
+        const methods = {
+            'bkash': 'বিকাশ',
+            'nagad': 'নগদ',
+            'rocket': 'রকেট',
+            'bank': 'ব্যাংক ট্রান্সফার',
+            'card': 'ক্রেডিট/ডেবিট কার্ড'
+        };
+        return methods[method] || method;
+    }
+    
+    // Get status text in Bengali
+    function getStatusText(status) {
+        const statuses = {
+            'pending': 'পেন্ডিং',
+            'approved': 'অনুমোদিত',
+            'rejected': 'প্রত্যাখ্যাত'
+        };
+        return statuses[status] || status;
+    }
+    
+    // Get CSS class for status
+    function getStatusClass(status) {
+        return `status-${status}`;
+    }
+    
+    // View payment details in modal
+    async function viewPaymentDetails(paymentId) {
+        try {
+            const response = await fetch(`http://localhost:5000/api/admin/payments/${paymentId}`);
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            
+            const payment = await response.json();
+            
+            if (!payment) {
+                throw new Error('Payment data not found');
+            }
+
+            // Set data
+            detailElements.name.textContent = payment.name || 'N/A';
+            detailElements.email.textContent = payment.email || 'N/A';
+            detailElements.phone.textContent = payment.phone || 'N/A';
+            detailElements.method.textContent = getPaymentMethodName(payment.paymentMethod) || 'N/A';
+            detailElements.txn.textContent = payment.txnId || 'N/A';
+            detailElements.course.textContent = payment.courseId || 'N/A';
+            detailElements.date.textContent = payment.date ? formatDateTime(payment.date) : 'N/A';
+            detailElements.status.textContent = getStatusText(payment.status);
+            detailElements.status.className = `detail-value ${getStatusClass(payment.status)}`;
+            
+            // Set amount (if available in data)
+            detailElements.amount.textContent = payment.amount ? `৳ ${payment.amount}` : 'N/A';
+
+            currentPaymentId = paymentId;
+            
+            document.getElementById('paymentDetailsModal').style.display = 'block';
+            
+        } catch (error) {
+            console.error('Error loading payment details:', error);
+            alert('পেমেন্ট বিবরণ লোড করতে সমস্যা হয়েছে: ' + error.message);
+        }
+    }
+    
+    // Format date and time in Bengali
+    function formatDateTime(dateStr) {
+        if (!dateStr) return 'N/A';
+        
+        const date = new Date(dateStr);
+        const options = { 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: true
+        };
+        return date.toLocaleDateString('bn-BD', options);
+    }
+    
+    // In admin_panel.html, modify the updatePaymentStatus function
+    async function updatePaymentStatus(status) {
+        if (!currentPaymentId) {
+            alert('কোন পেমেন্ট নির্বাচন করা হয়নি');
+            return;
+        }
+        
+        if (!confirm(`আপনি কি নিশ্চিতভাবে এই পেমেন্ট ${status === 'approved' ? 'অনুমোদন' : 'প্রত্যাখ্যান'} করতে চান?`)) {
+            return;
+        }
+        
+        try {
+            // Update payment status
+            const response = await fetch(`http://localhost:5000/api/admin/payments/${currentPaymentId}`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ status })
+            });
+            
+            const result = await response.json();
+            
+            if (!response.ok) {
+                throw new Error(result.message || 'Failed to update status');
+            }
+            
+            // If approved, unlock the course immediately
+            if (status === 'approved') {
+                try {
+                    const unlockResponse = await fetch(`http://localhost:5000/api/courses/unlock/${currentPaymentId}`, {
+                        method: 'POST'
+                    });
+                    
+                    const unlockResult = await unlockResponse.json();
+                    
+                    if (!unlockResponse.ok) {
+                        throw new Error(unlockResult.message || 'Failed to unlock course');
+                    }
+                    
+                    // Show success message with additional info
+                    alert(`পেমেন্ট সফলভাবে অনুমোদন করা হয়েছে এবং কোর্স আনলক করা হয়েছে।\n\nঅনুমোদনের সময়: ${new Date().toLocaleString('bn-BD')}`);
+                } catch (unlockError) {
+                    console.error('Error unlocking course:', unlockError);
+                    alert('পেমেন্ট অনুমোদিত হয়েছে কিন্তু কোর্স আনলক করতে সমস্যা হয়েছে: ' + unlockError.message);
+                }
+            } else {
+                // For rejected status
+                alert('পেমেন্ট সফলভাবে প্রত্যাখ্যান করা হয়েছে');
+            }
+            
+            // Close the modal and refresh list
+            closeModal('paymentDetailsModal');
+            renderPaymentRequests();
+            
+        } catch (error) {
+            console.error('Error updating payment status:', error);
+            alert(`স্ট্যাটাস আপডেট করতে সমস্যা হয়েছে: ${error.message}`);
+        }
+    }
+    
+    // Close modal
+    function closeModal(modalId) {
+        document.getElementById(modalId).style.display = 'none';
+        currentPaymentId = null;
+    }
+    
+    // Close modal when clicking outside
+    window.onclick = function(event) {
+        if (event.target.classList.contains('modal')) {
+            closeModal(event.target.id);
+        }
+    }
+    
+    // Initialize page
+    document.addEventListener('DOMContentLoaded', function() {
+        renderPaymentRequests();
+    });
+</script> -->
+
+<script>
+    // API base URL
+    const API_BASE_URL = 'https://your-render-backend-url.onrender.com';
+    
+    // Current payment being viewed in modal
+    let currentPaymentId = null;
+    
+    // DOM elements for payment details
+    const detailElements = {
+        name: document.getElementById('detail-name'),
+        email: document.getElementById('detail-email'),
+        phone: document.getElementById('detail-phone'),
+        method: document.getElementById('detail-method'),
+        txn: document.getElementById('detail-txn'),
+        course: document.getElementById('detail-course'),
+        date: document.getElementById('detail-date'),
+        status: document.getElementById('detail-status'),
+        amount: document.getElementById('detail-amount')
+    };
+
+    // Function to render payment requests
+    async function renderPaymentRequests() {
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/admin/payments`);
+            const result = await response.json();
+            
+            if (!response.ok) {
+                throw new Error(result.message || 'Failed to fetch payments');
+            }
+
+            const payments = result.payments || result;
+            
+            const tbody = document.getElementById('pendingPayments');
+            tbody.innerHTML = '';
+            
+            if (payments.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="8" class="no-requests">কোন পেন্ডিং পেমেন্ট রিকোয়েস্ট পাওয়া যায়নি</td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            payments.forEach(payment => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${payment.id}</td>
+                    <td>${payment.name}</td>
+                    <td>${payment.email || 'N/A'}</td>
+                    <td>${payment.phone || 'N/A'}</td>
+                    <td>${getPaymentMethodName(payment.paymentMethod)}</td>
+                    <td>${payment.txnId || 'N/A'}</td>
+                    <td class="${getStatusClass(payment.status)}">${getStatusText(payment.status)}</td>
+                    <td>
+                        <button class="action-btn view-btn" onclick="viewPaymentDetails('${payment.id}')">
+                            বিস্তারিত
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        } catch (error) {
+            console.error('Error fetching payments:', error);
+            const tbody = document.getElementById('pendingPayments');
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="8" class="error-message">
+                        পেমেন্ট রিকোয়েস্ট লোড করতে সমস্যা হয়েছে: ${error.message}
+                    </td>
+                </tr>
+            `;
+        }
+    }
+    
+    // Get payment method name in Bengali
+    function getPaymentMethodName(method) {
+        const methods = {
+            'bkash': 'বিকাশ',
+            'nagad': 'নগদ',
+            'rocket': 'রকেট',
+            'bank': 'ব্যাংক ট্রান্সফার',
+            'card': 'ক্রেডিট/ডেবিট কার্ড'
+        };
+        return methods[method] || method;
+    }
+    
+    // Get status text in Bengali
+    function getStatusText(status) {
+        const statuses = {
+            'pending': 'পেন্ডিং',
+            'approved': 'অনুমোদিত',
+            'rejected': 'প্রত্যাখ্যাত'
+        };
+        return statuses[status] || status;
+    }
+    
+    // Get CSS class for status
+    function getStatusClass(status) {
+        return `status-${status}`;
+    }
+    
+    // View payment details in modal
+    async function viewPaymentDetails(paymentId) {
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/admin/payments/${paymentId}`);
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            
+            const payment = await response.json();
+            
+            if (!payment) {
+                throw new Error('Payment data not found');
+            }
+
+            // Set data
+            detailElements.name.textContent = payment.name || 'N/A';
+            detailElements.email.textContent = payment.email || 'N/A';
+            detailElements.phone.textContent = payment.phone || 'N/A';
+            detailElements.method.textContent = getPaymentMethodName(payment.paymentMethod) || 'N/A';
+            detailElements.txn.textContent = payment.txnId || 'N/A';
+            detailElements.course.textContent = payment.courseId || 'N/A';
+            detailElements.date.textContent = payment.date ? formatDateTime(payment.date) : 'N/A';
+            detailElements.status.textContent = getStatusText(payment.status);
+            detailElements.status.className = `detail-value ${getStatusClass(payment.status)}`;
+            
+            // Set amount (if available in data)
+            detailElements.amount.textContent = payment.amount ? `৳ ${payment.amount}` : 'N/A';
+
+            currentPaymentId = paymentId;
+            
+            document.getElementById('paymentDetailsModal').style.display = 'block';
+            
+        } catch (error) {
+            console.error('Error loading payment details:', error);
+            alert('পেমেন্ট বিবরণ লোড করতে সমস্যা হয়েছে: ' + error.message);
+        }
+    }
+    
+    // Format date and time in Bengali
+    function formatDateTime(dateStr) {
+        if (!dateStr) return 'N/A';
+        
+        const date = new Date(dateStr);
+        const options = { 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: true
+        };
+        return date.toLocaleDateString('bn-BD', options);
+    }
+    
+    // In admin_panel.html, modify the updatePaymentStatus function
+    async function updatePaymentStatus(status) {
+        if (!currentPaymentId) {
+            alert('কোন পেমেন্ট নির্বাচন করা হয়নি');
+            return;
+        }
+        
+        if (!confirm(`আপনি কি নিশ্চিতভাবে এই পেমেন্ট ${status === 'approved' ? 'অনুমোদন' : 'প্রত্যাখ্যান'} করতে চান?`)) {
+            return;
+        }
+        
+        try {
+            // Update payment status
+            const response = await fetch(`${API_BASE_URL}/api/admin/payments/${currentPaymentId}`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ status })
+            });
+            
+            const result = await response.json();
+            
+            if (!response.ok) {
+                throw new Error(result.message || 'Failed to update status');
+            }
+            
+            // If approved, unlock the course immediately
+            if (status === 'approved') {
+                try {
+                    const unlockResponse = await fetch(`${API_BASE_URL}/api/courses/unlock/${currentPaymentId}`, {
+                        method: 'POST'
+                    });
+                    
+                    const unlockResult = await unlockResponse.json();
+                    
+                    if (!unlockResponse.ok) {
+                        throw new Error(unlockResult.message || 'Failed to unlock course');
+                    }
+                    
+                    // Show success message with additional info
+                    alert(`পেমেন্ট সফলভাবে অনুমোদন করা হয়েছে এবং কোর্স আনলক করা হয়েছে।\n\nঅনুমোদনের সময়: ${new Date().toLocaleString('bn-BD')}`);
+                } catch (unlockError) {
+                    console.error('Error unlocking course:', unlockError);
+                    alert('পেমেন্ট অনুমোদিত হয়েছে কিন্তু কোর্স আনলক করতে সমস্যা হয়েছে: ' + unlockError.message);
+                }
+            } else {
+                // For rejected status
+                alert('পেমেন্ট সফলভাবে প্রত্যাখ্যান করা হয়েছে');
+            }
+            
+            // Close the modal and refresh list
+            closeModal('paymentDetailsModal');
+            renderPaymentRequests();
+            
+        } catch (error) {
+            console.error('Error updating payment status:', error);
+            alert(`স্ট্যাটাস আপডেট করতে সমস্যা হয়েছে: ${error.message}`);
+        }
+    }
+    
+    // Close modal
+    function closeModal(modalId) {
+        document.getElementById(modalId).style.display = 'none';
+        currentPaymentId = null;
+    }
+    
+    // Close modal when clicking outside
+    window.onclick = function(event) {
+        if (event.target.classList.contains('modal')) {
+            closeModal(event.target.id);
+        }
+    }
+    
+    // Initialize page
+    document.addEventListener('DOMContentLoaded', function() {
+        renderPaymentRequests();
+    });
+</script>
+
+</body>
+</html>
