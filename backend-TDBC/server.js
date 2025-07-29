@@ -3,12 +3,14 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const mongoose = require('mongoose');
-const path = require('path'); // Added path module
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// MongoDB Connection (updated to remove deprecated options)
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/talimul_islam')
+// MongoDB Connection
+mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/talimul_islam', {
+  useNewUrlParser: true,
+  useUnifiedTopology: true
+})
 .then(() => console.log('MongoDB connected successfully'))
 .catch(err => console.error('MongoDB connection error:', err));
 
@@ -27,12 +29,9 @@ app.use('/api/admin/reviews', reviewRoutes);
 
 // Serve frontend files
 if (process.env.NODE_ENV === 'production') {
-  // Serve static files from frontend directory
-  app.use(express.static(path.join(__dirname, '../frontend')));
-  
-  // Handle SPA by redirecting all requests to index.html
+  app.use(express.static('frontend'));
   app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, '../frontend', 'CourseDetails.html'));
+    res.sendFile(path.resolve(__dirname, 'frontend', 'CourseDetails.html'));
   });
 }
 
