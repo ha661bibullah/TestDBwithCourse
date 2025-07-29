@@ -720,7 +720,7 @@
     });
 </script> -->
 
-<script>
+<!-- <script>
     // API base URL
     const API_BASE_URL = 'https://testdbwithcourse.onrender.com/api';
     
@@ -954,7 +954,245 @@
     document.addEventListener('DOMContentLoaded', function() {
         renderPaymentRequests();
     });
+</script> -->
+
+
+<script>
+    // API base URL - adjust this to your server URL
+    const API_BASE_URL = 'https://testdbwithcourse.onrender.com';
+    
+    // Current payment being viewed in modal
+    let currentPaymentId = null;
+    
+    // DOM elements for payment details
+    const detailElements = {
+        name: document.getElementById('detail-name'),
+        email: document.getElementById('detail-email'),
+        phone: document.getElementById('detail-phone'),
+        method: document.getElementById('detail-method'),
+        txn: document.getElementById('detail-txn'),
+        course: document.getElementById('detail-course'),
+        date: document.getElementById('detail-date'),
+        status: document.getElementById('detail-status'),
+        amount: document.getElementById('detail-amount')
+    };
+
+    // Function to render payment requests
+    async function renderPaymentRequests() {
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/admin/payments`);
+            const result = await response.json();
+            
+            if (!response.ok) {
+                throw new Error(result.error || 'Failed to fetch payments');
+            }
+
+            const payments = result.payments || [];
+            
+            const tbody = document.getElementById('pendingPayments');
+            tbody.innerHTML = '';
+            
+            if (payments.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="8" class="no-requests">কোন পেন্ডিং পেমেন্ট রিকোয়েস্ট পাওয়া যায়নি</td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            payments.forEach(payment => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${payment._id}</td>
+                    <td>${payment.name || 'N/A'}</td>
+                    <td>${payment.email || 'N/A'}</td>
+                    <td>${payment.phone || 'N/A'}</td>
+                    <td>${getPaymentMethodName(payment.paymentMethod)}</td>
+                    <td>${payment.txnId || 'N/A'}</td>
+                    <td class="${getStatusClass(payment.status)}">${getStatusText(payment.status)}</td>
+                    <td>
+                        <button class="action-btn view-btn" onclick="viewPaymentDetails('${payment._id}')">
+                            বিস্তারিত
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        } catch (error) {
+            console.error('Error fetching payments:', error);
+            const tbody = document.getElementById('pendingPayments');
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="8" class="error-message">
+                        পেমেন্ট রিকোয়েস্ট লোড করতে সমস্যা হয়েছে: ${error.message}
+                    </td>
+                </tr>
+            `;
+        }
+    }
+    
+    // Get payment method name in Bengali
+    function getPaymentMethodName(method) {
+        const methods = {
+            'bkash': 'বিকাশ',
+            'nagad': 'নগদ',
+            'rocket': 'রকেট',
+            'bank': 'ব্যাংক ট্রান্সফার',
+            'card': 'ক্রেডিট/ডেবিট কার্ড'
+        };
+        return methods[method] || method || 'N/A';
+    }
+    
+    // Get status text in Bengali
+    function getStatusText(status) {
+        const statuses = {
+            'pending': 'পেন্ডিং',
+            'approved': 'অনুমোদিত',
+            'rejected': 'প্রত্যাখ্যাত'
+        };
+        return statuses[status] || status || 'N/A';
+    }
+    
+    // Get CSS class for status
+    function getStatusClass(status) {
+        return `status-${status}`;
+    }
+    
+    // View payment details in modal
+    async function viewPaymentDetails(paymentId) {
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/admin/payments/${paymentId}`);
+            const result = await response.json();
+            
+            if (!response.ok) {
+                throw new Error(result.error || 'Network response was not ok');
+            }
+            
+            const payment = result.payment || result;
+            
+            if (!payment) {
+                throw new Error('Payment data not found');
+            }
+
+            // Set data
+            detailElements.name.textContent = payment.name || 'N/A';
+            detailElements.email.textContent = payment.email || 'N/A';
+            detailElements.phone.textContent = payment.phone || 'N/A';
+            detailElements.method.textContent = getPaymentMethodName(payment.paymentMethod);
+            detailElements.txn.textContent = payment.txnId || 'N/A';
+            detailElements.course.textContent = payment.courseId || 'N/A';
+            detailElements.date.textContent = payment.date ? formatDateTime(payment.date) : 'N/A';
+            detailElements.status.textContent = getStatusText(payment.status);
+            detailElements.status.className = `detail-value ${getStatusClass(payment.status)}`;
+            detailElements.amount.textContent = payment.amount ? `৳ ${payment.amount}` : 'N/A';
+
+            currentPaymentId = paymentId;
+            
+            document.getElementById('paymentDetailsModal').style.display = 'block';
+            
+        } catch (error) {
+            console.error('Error loading payment details:', error);
+            alert('পেমেন্ট বিবরণ লোড করতে সমস্যা হয়েছে: ' + error.message);
+        }
+    }
+    
+    // Format date and time in Bengali
+    function formatDateTime(dateStr) {
+        if (!dateStr) return 'N/A';
+        
+        const date = new Date(dateStr);
+        const options = { 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: true
+        };
+        return date.toLocaleDateString('bn-BD', options);
+    }
+    
+    // Update payment status
+    async function updatePaymentStatus(status) {
+        if (!currentPaymentId) {
+            alert('কোন পেমেন্ট নির্বাচন করা হয়নি');
+            return;
+        }
+        
+        if (!confirm(`আপনি কি নিশ্চিতভাবে এই পেমেন্ট ${status === 'approved' ? 'অনুমোদন' : 'প্রত্যাখ্যান'} করতে চান?`)) {
+            return;
+        }
+        
+        try {
+            // Update payment status
+            const response = await fetch(`${API_BASE_URL}/api/admin/payments/${currentPaymentId}`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ status })
+            });
+            
+            const result = await response.json();
+            
+            if (!response.ok) {
+                throw new Error(result.error || 'Failed to update status');
+            }
+            
+            // If approved, unlock the course immediately
+            if (status === 'approved') {
+                try {
+                    const unlockResponse = await fetch(`${API_BASE_URL}/api/courses/unlock/${currentPaymentId}`, {
+                        method: 'POST'
+                    });
+                    
+                    const unlockResult = await unlockResponse.json();
+                    
+                    if (!unlockResponse.ok) {
+                        throw new Error(unlockResult.error || 'Failed to unlock course');
+                    }
+                    
+                    // Show success message with additional info
+                    alert(`পেমেন্ট সফলভাবে অনুমোদন করা হয়েছে এবং কোর্স আনলক করা হয়েছে।\n\nঅনুমোদনের সময়: ${new Date().toLocaleString('bn-BD')}`);
+                } catch (unlockError) {
+                    console.error('Error unlocking course:', unlockError);
+                    alert('পেমেন্ট অনুমোদিত হয়েছে কিন্তু কোর্স আনলক করতে সমস্যা হয়েছে: ' + unlockError.message);
+                }
+            } else {
+                // For rejected status
+                alert('পেমেন্ট সফলভাবে প্রত্যাখ্যান করা হয়েছে');
+            }
+            
+            // Close the modal and refresh list
+            closeModal('paymentDetailsModal');
+            renderPaymentRequests();
+            
+        } catch (error) {
+            console.error('Error updating payment status:', error);
+            alert(`স্ট্যাটাস আপডেট করতে সমস্যা হয়েছে: ${error.message}`);
+        }
+    }
+    
+    // Close modal
+    function closeModal(modalId) {
+        document.getElementById(modalId).style.display = 'none';
+        currentPaymentId = null;
+    }
+    
+    // Close modal when clicking outside
+    window.onclick = function(event) {
+        if (event.target.classList.contains('payment-details-modal')) {
+            closeModal(event.target.id);
+        }
+    }
+    
+    // Initialize page
+    document.addEventListener('DOMContentLoaded', function() {
+        renderPaymentRequests();
+    });
 </script>
+
 
 </body>
 </html>
