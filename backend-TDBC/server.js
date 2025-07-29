@@ -30,8 +30,8 @@ app.use('/api/admin/reviews', reviewRoutes);
 // Serve frontend files
 if (process.env.NODE_ENV === 'production') {
   app.use(express.static('frontend'));
-  app.get('*', (req, res) => {
-    res.sendFile(path.resolve(__dirname, 'frontend', 'CourseDetails.html'));
+  app.get('*', (req, res) => { 
+    res.sendFile(path.resolve(__dirname, 'frontend-TDBC', 'CourseDetails.html'));
   });
 }
 
